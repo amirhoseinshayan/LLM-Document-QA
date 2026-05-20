@@ -122,3 +122,28 @@ class DocumentSearchRequestSerializer(serializers.Serializer):
     )
 
 
+class AskQuestionRequestSerializer(serializers.Serializer):
+    question = serializers.CharField(max_length=2000)
+    top_k = serializers.IntegerField(
+        min_value=1,
+        max_value=20,
+        default=5,
+        required=False,
+    )
+    document_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+    )
+
+
+class RelatedDocumentSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+
+
+class AskQuestionResponseSerializer(serializers.Serializer):
+    question = serializers.CharField()
+    answer = serializers.CharField()
+    used_chunks_count = serializers.IntegerField()
+    related_documents = RelatedDocumentSerializer(many=True)
+    history_id = serializers.IntegerField()

@@ -43,11 +43,9 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
+open http://127.0.0.1:8000/admin/
 
-########then open http://127.0.0.1:8000/admin/
-
-
-
+---
 
 # API Documentation
 
@@ -72,14 +70,23 @@ Chunks API -----> GET /api/chunks/
 List Question/Answer History -----> GET /api/history/
     Retrieve Question/Answer History ------> GET /api/history/{id}/
 
-
-
 API Testing Guide:
     -run python manage.py runserver
     -then open http://127.0.0.1:8000/api/
 
 
+---
 
+## 4. Ask API
+
+The Ask API is used to submit a user question and generate an answer based on the uploaded document chunks.
+
+This endpoint implements the main RAG flow of the project:
+
+```text
+User Question → Search Relevant Chunks → Build Context → Generate Answer → Save History
+
+---
 ## Project Structure
 
 ```text

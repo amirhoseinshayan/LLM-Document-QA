@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 
 from documents.models import Document, DocumentChunk, QuestionAnswer
 from documents.serializers import (
+    AskQuestionRequestSerializer,
+    AskQuestionResponseSerializer,
     DocumentChunkSerializer,
     DocumentDetailSerializer,
     DocumentSearchRequestSerializer,
@@ -13,6 +15,8 @@ from documents.serializers import (
     QuestionAnswerSerializer,
 )
 from documents.services.document_processor import process_document
+from documents.services.llm_service import LLMConfigurationError
+from documents.services.rag_service import answer_question_with_rag
 from documents.services.search_service import search_relevant_chunks
 
 
@@ -119,5 +123,63 @@ class DocumentSearchAPIView(APIView):
                 "count": len(response_results),
                 "results": response_results,
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AskQuestionAPIView(APIView):
+    """
+    Answer a user question based on uploaded documents.
+    """
+
+    def post(self, request):
+        request_serializer = AskQuestionRequestSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+
+        question = request_serializer.validated_data["question"]
+        top_k = request_serializer.validated_data.get("top_k", 5)
+        document_id = request_serializer.validated_data.get("document_id")
+
+        try:
+            result = answer_question_with_rag(
+                question=question,
+                top_k=top_k,
+                document_id=document_id,
+            )
+        except LLMConfigurationError as exc:
+            return Response(
+                {
+                    "message": "LLM configuration error.",
+                    "error": str(exc),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as exc:
+            return Response(
+                {
+                    "message": "Answer generation failed.",
+                    "error": str(exc),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        response_data = {
+            "question": result.question,
+            "answer": result.answer,
+            "used_chunks_count": len(result.used_chunks),
+            "related_documents": [
+                {
+                    "id": document.id,
+                    "title": document.title,
+                }
+                for document in result.related_documents
+            ],
+            "history_id": result.history.id,
+        }
+
+        response_serializer = AskQuestionResponseSerializer(response_data)
+
+        return Response(
+            response_serializer.data,
             status=status.HTTP_200_OK,
         )
