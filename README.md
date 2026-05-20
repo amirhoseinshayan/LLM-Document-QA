@@ -2,6 +2,8 @@
 
 A Django-based document question-answering system.
 
+---
+
 ## Current Features
 
 - Django project setup
@@ -10,13 +12,17 @@ A Django-based document question-answering system.
 - DOCX file upload support
 - Full text extraction from DOCX files
 - Full text storage in the database
-- Text chunking and chunk storage
+- LangChain-based text chunking
+- Chunk storage in the database
 - Document CRUD API
 - Read-only chunks API
 - Read-only question-answer history API
 - Manual document reprocessing API
+- Search API for finding relevant document chunks
 - Question/Answer history models prepared for the next phases
 - SQLite for local development
+
+---
 
 ## Tech Stack
 
@@ -24,6 +30,8 @@ A Django-based document question-answering system.
 - Django
 - Django REST Framework
 - python-docx
+- LangChain
+- langchain-text-splitters
 - SQLite for local development
 
 ## How to Run Locally
@@ -39,45 +47,7 @@ python manage.py runserver
 ########then open http://127.0.0.1:8000/admin/
 
 
-## Project Structure
 
-```text
-llm_document_qa/
-│
-├── config/
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-│
-├── documents/
-│   ├── migrations/
-│   │   ├── __init__.py
-│   │   └── 0001_initial.py
-│   │
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── chunker.py
-│   │   ├── document_processor.py
-│   │   └── docx_extractor.py
-│   │
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── urls.py
-│   ├── tests.py
-│   └── views.py
-│
-├── manage.py
-├── requirements.txt
-├── README.md
-└── .gitignore
-
-
----
 
 # API Documentation
 
@@ -107,3 +77,43 @@ List Question/Answer History -----> GET /api/history/
 API Testing Guide:
     -run python manage.py runserver
     -then open http://127.0.0.1:8000/api/
+
+
+
+## Project Structure
+
+```text
+llm_document_qa/
+│
+├── config/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── documents/
+│   ├── migrations/
+│   │   ├── __init__.py
+│   │   └── 0001_initial.py
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── chunker.py
+│   │   ├── document_processor.py
+│   │   ├── docx_extractor.py
+│   │   └── search_service.py
+│   │
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── serializers.py
+│   ├── urls.py
+│   ├── tests.py
+│   └── views.py
+│
+├── manage.py
+├── requirements.txt
+├── README.md
+└── .gitignore

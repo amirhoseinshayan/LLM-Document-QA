@@ -107,3 +107,18 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
 
     def get_related_documents_titles(self, obj):
         return [document.title for document in obj.related_documents.all()]
+    
+class DocumentSearchRequestSerializer(serializers.Serializer):
+    query = serializers.CharField(max_length=1000)
+    top_k = serializers.IntegerField(
+        min_value=1,
+        max_value=20,
+        default=5,
+        required=False,
+    )
+    document_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+    )
+
+
