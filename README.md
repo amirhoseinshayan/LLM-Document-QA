@@ -21,6 +21,10 @@ A Django-based document question-answering system.
 - Search API for finding relevant document chunks
 - Question/Answer history models prepared for the next phases
 - SQLite for local development
+- OpenAPI schema generation
+- Swagger UI documentation
+- ReDoc documentation
+- Interactive API testing through Swagger UI
 
 ---
 
@@ -87,6 +91,20 @@ This endpoint implements the main RAG flow of the project:
 User Question → Search Relevant Chunks → Build Context → Generate Answer → Save History
 
 ---
+
+## Swagger and OpenAPI Documentation
+
+The project includes automatically generated API documentation using `drf-spectacular`.
+
+Available documentation endpoints:
+
+```text
+GET /api/schema/ -----> http://127.0.0.1:8000/api/schema/
+GET /api/docs/ -----> http://127.0.0.1:8000/api/docs/
+GET /api/redoc/ -----> http://127.0.0.1:8000/api/redoc/
+
+---
+
 ## Project Structure
 
 ```text

@@ -1,3 +1,9 @@
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -20,6 +26,47 @@ from documents.services.rag_service import answer_question_with_rag
 from documents.services.search_service import search_relevant_chunks
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List documents",
+        description="Return all uploaded documents with processing status and chunk count.",
+        tags=["Documents"],
+    ),
+    create=extend_schema(
+        summary="Upload a document",
+        description=(
+            "Upload a DOCX document. The system automatically extracts full text "
+            "and creates document chunks after saving the file."
+        ),
+        tags=["Documents"],
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve document details",
+        description="Return a single document with its extracted text and generated chunks.",
+        tags=["Documents"],
+    ),
+    update=extend_schema(
+        summary="Update a document",
+        description=(
+            "Fully update a document. If a new file is uploaded, the document "
+            "is reprocessed and chunks are recreated."
+        ),
+        tags=["Documents"],
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a document",
+        description=(
+            "Partially update a document. If a new file is uploaded, the document "
+            "is reprocessed and chunks are recreated."
+        ),
+        tags=["Documents"],
+    ),
+    destroy=extend_schema(
+        summary="Delete a document",
+        description="Delete a document and all related chunks.",
+        tags=["Documents"],
+    ),
+)
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all()
     parser_classes = [MultiPartParser, FormParser]
@@ -41,6 +88,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
         if "file" in self.request.FILES:
             process_document(document)
 
+    @extend_schema(
+        summary="Reprocess a document",
+        description=(
+            "Manually reprocess an existing document. This extracts text again, "
+            "deletes old chunks, and creates new chunks."
+        ),
+        tags=["Documents"],
+        responses={200: DocumentSerializer},
+    )
     @action(detail=True, methods=["post"])
     def reprocess(self, request, pk=None):
         # Manually reprocess a document and recreate its chunks.
@@ -66,6 +122,26 @@ class DocumentViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List document chunks",
+        description="Return all generated document chunks. Can be filtered by document ID.",
+        tags=["Chunks"],
+        parameters=[
+            OpenApiParameter(
+                name="document",
+                description="Filter chunks by document ID.",
+                required=False,
+                type=int,
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a document chunk",
+        description="Return a single document chunk by ID.",
+        tags=["Chunks"],
+    ),
+)
 class DocumentChunkViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DocumentChunk.objects.select_related("document").all()
     serializer_class = DocumentChunkSerializer
@@ -81,6 +157,18 @@ class DocumentChunkViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List question-answer history",
+        description="Return all saved question-answer records.",
+        tags=["History"],
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a question-answer record",
+        description="Return a single saved question-answer record by ID.",
+        tags=["History"],
+    ),
+)
 class QuestionAnswerViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = QuestionAnswer.objects.prefetch_related("related_documents").all()
     serializer_class = QuestionAnswerSerializer
@@ -91,6 +179,47 @@ class DocumentSearchAPIView(APIView):
     Search relevant document chunks for a given query.
     """
 
+    @extend_schema(
+        summary="Search relevant chunks",
+        description=(
+            "Search uploaded document chunks and return the most relevant chunks "
+            "for a given query. This endpoint is used before answer generation."
+        ),
+        tags=["Search"],
+        request=DocumentSearchRequestSerializer,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string"},
+                    "count": {"type": "integer"},
+                    "results": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                    },
+                },
+            }
+        },
+        examples=[
+            OpenApiExample(
+                "Search request",
+                value={
+                    "query": "ادبیات",
+                    "top_k": 5,
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Search request with document filter",
+                value={
+                    "query": "Django",
+                    "top_k": 5,
+                    "document_id": 1,
+                },
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         request_serializer = DocumentSearchRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
@@ -132,6 +261,36 @@ class AskQuestionAPIView(APIView):
     Answer a user question based on uploaded documents.
     """
 
+    @extend_schema(
+        summary="Ask a question",
+        description=(
+            "Receive a user question, retrieve relevant document chunks, build context, "
+            "generate an answer using the configured LLM provider, and save the result "
+            "in question-answer history."
+        ),
+        tags=["Ask"],
+        request=AskQuestionRequestSerializer,
+        responses={200: AskQuestionResponseSerializer},
+        examples=[
+            OpenApiExample(
+                "Ask request",
+                value={
+                    "question": "در این سند درباره ادبیات چه گفته شده است؟",
+                    "top_k": 5,
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Ask request with document filter",
+                value={
+                    "question": "What does the document say about Django?",
+                    "top_k": 5,
+                    "document_id": 1,
+                },
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         request_serializer = AskQuestionRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
