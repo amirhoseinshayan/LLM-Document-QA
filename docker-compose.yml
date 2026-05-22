@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    container_name: llm_document_qa_web
+    command: /app/entrypoint.sh
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - media_data:/app/media
+      - sqlite_data:/app/data
+    env_file:
+      - .env.docker
+    environment:
+      - DJANGO_ENV=docker
+
+volumes:
+  media_data:
+  sqlite_data:

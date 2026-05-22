@@ -25,6 +25,12 @@ A Django-based document question-answering system.
 - Swagger UI documentation
 - ReDoc documentation
 - Interactive API testing through Swagger UI
+- Docker support
+- Docker Compose setup
+- Automatic migrations on container startup
+- Static files collection in Docker
+- Docker environment configuration
+- Persistent Docker volumes for media and SQLite database
 
 ---
 
@@ -38,7 +44,18 @@ A Django-based document question-answering system.
 - langchain-text-splitters
 - SQLite for local development
 
-## How to Run Locally
+## How to Run the Project
+
+The project can be run in two ways:
+
+1. Local development using a Python virtual environment
+2. Docker development using Docker Compose
+
+---
+
+## Option 1: Run Locally with Virtual Environment
+
+### 1. Create and activate a virtual environment
 
 ```bash
 python -m venv venv
@@ -47,11 +64,20 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
-open http://127.0.0.1:8000/admin/
+open the project http://127.0.0.1:8000/admin/
+```
+## Option 2: Run with Docker
 
----
+### 1. Make sure Docker Desktop is running
 
-# API Documentation
+```bash
+docker compose up --build
+open http://127.0.0.1:8000/
+Create a superuser inside Docker
+open new terminal and write: docker compose exec web python manage.py createsuperuser
+```
+
+## API Documentation
 
 This section describes the current REST API endpoints implemented in the project.
 
@@ -77,7 +103,7 @@ List Question/Answer History -----> GET /api/history/
 API Testing Guide:
     -run python manage.py runserver
     -then open http://127.0.0.1:8000/api/
-
+```
 
 ---
 
@@ -89,7 +115,7 @@ This endpoint implements the main RAG flow of the project:
 
 ```text
 User Question → Search Relevant Chunks → Build Context → Generate Answer → Save History
-
+```
 ---
 
 ## Swagger and OpenAPI Documentation
@@ -102,43 +128,22 @@ Available documentation endpoints:
 GET /api/schema/ -----> http://127.0.0.1:8000/api/schema/
 GET /api/docs/ -----> http://127.0.0.1:8000/api/docs/
 GET /api/redoc/ -----> http://127.0.0.1:8000/api/redoc/
-
+```
 ---
 
-## Project Structure
+## Docker Setup
+
+The project can be run with Docker and Docker Compose.
+
+### Docker Files
+
+The project includes:
 
 ```text
-llm_document_qa/
-│
-├── config/
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-│
-├── documents/
-│   ├── migrations/
-│   │   ├── __init__.py
-│   │   └── 0001_initial.py
-│   │
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── chunker.py
-│   │   ├── document_processor.py
-│   │   ├── docx_extractor.py
-│   │   └── search_service.py
-│   │
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── urls.py
-│   ├── tests.py
-│   └── views.py
-│
-├── manage.py
-├── requirements.txt
-├── README.md
-└── .gitignore
+Dockerfile
+docker-compose.yml
+.dockerignore
+entrypoint.sh
+.env.docker
+---
+```
