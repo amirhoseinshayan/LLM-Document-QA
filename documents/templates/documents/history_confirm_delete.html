@@ -1,0 +1,20 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="card">
+    <span class="badge badge-error">Danger Zone</span>
+    <h1>Delete History Item</h1>
+
+    <p>Are you sure you want to delete this question-answer record?</p>
+    <h2>{{ history_item.question|truncatechars:120 }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="actions">
+            <button class="btn btn-danger" type="submit">Yes, Delete</button>
+            <a class="btn btn-light" href="{% url 'ui-history-detail' history_item.pk %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

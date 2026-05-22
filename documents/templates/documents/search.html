@@ -1,0 +1,80 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Search Document Chunks</h1>
+        <p>Find the most relevant chunks across all documents or within a selected document.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-document-list' %}">Documents</a>
+    </div>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="grid">
+            <div>
+                <label>Query</label>
+                {{ form.query }}
+            </div>
+
+            <div>
+                <label>Top K</label>
+                {{ form.top_k }}
+            </div>
+
+            <div>
+                <label>Document Filter</label>
+                {{ form.document }}
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" type="submit">Search Chunks</button>
+        </div>
+    </form>
+</div>
+
+{% if query %}
+    <div class="card">
+        <h2>Results for "{{ query }}"</h2>
+
+        {% if selected_document %}
+            <p>Document filter: <strong>{{ selected_document.title }}</strong></p>
+        {% else %}
+            <p>Document filter: <strong>All documents</strong></p>
+        {% endif %}
+
+        <span class="badge badge-blue">{{ results|length }} results found</span>
+    </div>
+
+    {% for result in results %}
+        <div class="card">
+            <div class="list-row">
+                <div>
+                    <h3 class="list-title">{{ result.chunk.document.title }}</h3>
+                    <p class="list-meta">Score: {{ result.score }}</p>
+                    <p class="list-meta">Chunk index: {{ result.chunk.chunk_index }}</p>
+                </div>
+
+                <div>
+                    <a class="btn" href="{% url 'ui-document-detail' result.chunk.document.pk %}">
+                        View Document
+                    </a>
+                </div>
+            </div>
+
+            <pre>{{ result.chunk.content }}</pre>
+        </div>
+    {% empty %}
+        <div class="empty-state card">
+            <h3>No relevant chunks found</h3>
+            <p>Try another query or select a different document filter.</p>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

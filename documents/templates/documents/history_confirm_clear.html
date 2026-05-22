@@ -1,0 +1,20 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="card">
+    <span class="badge badge-error">Danger Zone</span>
+    <h1>Clear All History</h1>
+
+    <p>Are you sure you want to delete all question-answer history records?</p>
+    <p class="muted">This action cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="actions">
+            <button class="btn btn-danger" type="submit">Yes, Clear All</button>
+            <a class="btn btn-light" href="{% url 'ui-history' %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

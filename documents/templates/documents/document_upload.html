@@ -1,0 +1,47 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Upload Document</h1>
+        <p>Upload a DOCX file and let the system extract text and create chunks.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-document-list' %}">Back to Documents</a>
+    </div>
+</div>
+
+<div class="grid-two">
+    <div class="card">
+        <h2>Document Upload Form</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label>Title</label>
+            {{ form.title }}
+
+            <label>DOCX File</label>
+            {{ form.file }}
+
+            <div class="actions">
+                <button class="btn" type="submit">Upload and Process</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>What happens next?</h2>
+        <p class="muted">After uploading, the system will automatically:</p>
+
+        <ul>
+            <li>Save the DOCX file</li>
+            <li>Extract full text</li>
+            <li>Create text chunks</li>
+            <li>Store chunks for search and QA</li>
+            <li>Mark the document as processed</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

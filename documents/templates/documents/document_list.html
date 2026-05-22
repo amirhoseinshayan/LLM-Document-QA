@@ -1,0 +1,82 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Documents</h1>
+        <p>Manage uploaded documents, processing status, chunks, and actions.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn" href="{% url 'ui-document-upload' %}">Upload New Document</a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Filter Documents</h2>
+    <p class="muted">Search documents by title or filter them by processing status.</p>
+
+    <form method="get">
+        <div class="grid">
+            <div>
+                <label>Title Search</label>
+                {{ form.query }}
+            </div>
+
+            <div>
+                <label>Status</label>
+                {{ form.status }}
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" type="submit">Apply Filters</button>
+            <a class="btn btn-light" href="{% url 'ui-document-list' %}">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Document List</h2>
+
+    {% for document in documents %}
+        <div class="list-row">
+            <div>
+                <h3 class="list-title">
+                    <a href="{% url 'ui-document-detail' document.pk %}">
+                        {{ document.title }}
+                    </a>
+                </h3>
+
+                <p class="list-meta">Uploaded at: {{ document.uploaded_at }}</p>
+                <p class="list-meta">Updated at: {{ document.updated_at }}</p>
+                <p class="list-meta">Chunks: {{ document.chunks.count }}</p>
+
+                {% if document.processing_error %}
+                    <p><strong>Processing error:</strong> {{ document.processing_error }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if document.is_processed %}
+                    <span class="badge badge-success">Processed</span>
+                {% else %}
+                    <span class="badge badge-error">Not Processed</span>
+                {% endif %}
+
+                <div class="actions">
+                    <a class="btn" href="{% url 'ui-document-detail' document.pk %}">Details</a>
+                    <a class="btn btn-secondary" href="{% url 'ui-document-update' document.pk %}">Edit</a>
+                    <a class="btn btn-danger" href="{% url 'ui-document-delete' document.pk %}">Delete</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <h3>No documents found</h3>
+            <p>Try resetting filters or upload a new document.</p>
+            <a class="btn" href="{% url 'ui-document-upload' %}">Upload Document</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

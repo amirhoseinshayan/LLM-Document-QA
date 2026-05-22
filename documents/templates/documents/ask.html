@@ -1,0 +1,91 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Ask a Question</h1>
+        <p>Ask questions based on uploaded document content using the RAG pipeline.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-history' %}">View History</a>
+    </div>
+</div>
+
+<div class="grid-two">
+    <div class="card">
+        <h2>Question Form</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Question</label>
+            {{ form.question }}
+
+            <label>Top K</label>
+            {{ form.top_k }}
+
+            <label>Document Filter</label>
+            {{ form.document }}
+
+            <div class="actions">
+                <button class="btn" type="submit">Generate Answer</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>How it works</h2>
+        <p class="muted">The system will:</p>
+
+        <ul>
+            <li>Search relevant chunks</li>
+            <li>Build document context</li>
+            <li>Generate an answer using the configured provider</li>
+            <li>Save the result to history</li>
+        </ul>
+    </div>
+</div>
+
+{% if rag_result %}
+    <div class="card">
+        <h2>Generated Answer</h2>
+
+        {% if selected_document %}
+            <p>Document filter: <strong>{{ selected_document.title }}</strong></p>
+        {% else %}
+            <p>Document filter: <strong>All documents</strong></p>
+        {% endif %}
+
+        <pre>{{ rag_result.answer }}</pre>
+
+        <div class="grid">
+            <div class="card card-compact">
+                <h3>{{ rag_result.used_chunks|length }}</h3>
+                <p class="muted">Used Chunks</p>
+            </div>
+
+            <div class="card card-compact">
+                <h3>{{ rag_result.related_documents|length }}</h3>
+                <p class="muted">Related Documents</p>
+            </div>
+
+            <div class="card card-compact">
+                <h3>{{ rag_result.history.id }}</h3>
+                <p class="muted">History ID</p>
+            </div>
+        </div>
+
+        <h3>Related Documents</h3>
+        {% for document in rag_result.related_documents %}
+            <p>
+                <a class="btn btn-light" href="{% url 'ui-document-detail' document.pk %}">
+                    {{ document.title }}
+                </a>
+            </p>
+        {% empty %}
+            <p>No related documents found.</p>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

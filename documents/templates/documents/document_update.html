@@ -1,0 +1,35 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Edit Document</h1>
+        <p>Update the title or replace the DOCX file.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-document-detail' document.pk %}">Cancel</a>
+    </div>
+</div>
+
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Title</label>
+        {{ form.title }}
+
+        <label>Replace DOCX File</label>
+        {{ form.file }}
+
+        <p class="muted">
+            If you upload a new file, the document will be reprocessed automatically.
+        </p>
+
+        <div class="actions">
+            <button class="btn" type="submit">Save Changes</button>
+            <a class="btn btn-light" href="{% url 'ui-document-detail' document.pk %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

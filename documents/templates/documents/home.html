@@ -1,0 +1,98 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="card hero">
+    <span class="badge badge-blue">Phase 8 Interface</span>
+    <h1>Document Question Answering System</h1>
+    <p class="muted">
+        Upload DOCX documents, extract text, search relevant chunks, and ask questions through a clean user interface.
+    </p>
+
+    <div class="actions">
+        <a class="btn" href="{% url 'ui-document-upload' %}">Upload Document</a>
+        <a class="btn btn-light" href="{% url 'ui-ask' %}">Ask a Question</a>
+        <a class="btn btn-secondary" href="/api/docs/">Open API Docs</a>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card stat-card">
+        <p class="stat-number">{{ documents_count }}</p>
+        <p class="stat-label">Total Documents</p>
+    </div>
+
+    <div class="card stat-card">
+        <p class="stat-number">{{ processed_documents_count }}</p>
+        <p class="stat-label">Processed Documents</p>
+    </div>
+
+    <div class="card stat-card">
+        <p class="stat-number">{{ history_count }}</p>
+        <p class="stat-label">Question/Answer Records</p>
+    </div>
+
+    <div class="card stat-card">
+        <p class="stat-number">{{ llm_provider }}</p>
+        <p class="stat-label">Current LLM Provider</p>
+    </div>
+</div>
+
+<div class="grid-two">
+    <div class="card">
+        <h2>Latest Documents</h2>
+        <p class="muted">Recently uploaded documents and processing status.</p>
+
+        {% for document in latest_documents %}
+            <div class="list-row">
+                <div>
+                    <h3 class="list-title">
+                        <a href="{% url 'ui-document-detail' document.pk %}">
+                            {{ document.title }}
+                        </a>
+                    </h3>
+                    <p class="list-meta">Uploaded at: {{ document.uploaded_at }}</p>
+                    <p class="list-meta">Chunks: {{ document.chunks.count }}</p>
+                </div>
+
+                <div>
+                    {% if document.is_processed %}
+                        <span class="badge badge-success">Processed</span>
+                    {% else %}
+                        <span class="badge badge-error">Not Processed</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <h3>No documents yet</h3>
+                <p>Upload your first DOCX document to start.</p>
+                <a class="btn" href="{% url 'ui-document-upload' %}">Upload Document</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2>Latest Questions</h2>
+        <p class="muted">Recent questions submitted to the RAG pipeline.</p>
+
+        {% for item in latest_history_items %}
+            <div class="list-row">
+                <div>
+                    <h3 class="list-title">
+                        <a href="{% url 'ui-history-detail' item.pk %}">
+                            {{ item.question|truncatechars:80 }}
+                        </a>
+                    </h3>
+                    <p class="list-meta">Created at: {{ item.created_at }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <h3>No questions yet</h3>
+                <p>Ask your first question after uploading a document.</p>
+                <a class="btn" href="{% url 'ui-ask' %}">Ask Question</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

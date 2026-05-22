@@ -1,0 +1,89 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>{{ document.title }}</h1>
+        <p>View extracted text, generated chunks, and document actions.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-document-list' %}">Back to Documents</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="grid">
+        <div>
+            <h2>Document Status</h2>
+
+            {% if document.is_processed %}
+                <span class="badge badge-success">Processed</span>
+            {% else %}
+                <span class="badge badge-error">Not Processed</span>
+            {% endif %}
+
+            <p class="list-meta">Uploaded at: {{ document.uploaded_at }}</p>
+            <p class="list-meta">Updated at: {{ document.updated_at }}</p>
+            <p class="list-meta">Chunk count: {{ chunks.count }}</p>
+
+            {% if document.file %}
+                <p>
+                    <strong>Uploaded file:</strong>
+                    <a href="{{ document.file.url }}" target="_blank">Open DOCX file</a>
+                </p>
+            {% endif %}
+        </div>
+
+        <div>
+            <h2>Actions</h2>
+
+            <div class="actions">
+                <a class="btn" href="{% url 'ui-document-update' document.pk %}">Edit Document</a>
+
+                <form method="post" action="{% url 'ui-document-reprocess' document.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-secondary" type="submit">Reprocess</button>
+                </form>
+
+                <a class="btn btn-danger" href="{% url 'ui-document-delete' document.pk %}">Delete</a>
+            </div>
+        </div>
+    </div>
+
+    {% if document.processing_error %}
+        <div class="divider"></div>
+        <p><strong>Processing error:</strong> {{ document.processing_error }}</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Extracted Full Text</h2>
+
+    {% if document.full_text %}
+        <pre>{{ document.full_text }}</pre>
+    {% else %}
+        <div class="empty-state">
+            <h3>No extracted text</h3>
+            <p>Try reprocessing the document.</p>
+        </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Generated Chunks</h2>
+    <p class="muted">Chunks are used for search and question answering.</p>
+
+    {% for chunk in chunks %}
+        <div class="card card-compact">
+            <h3>Chunk {{ chunk.chunk_index }}</h3>
+            <pre>{{ chunk.content }}</pre>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <h3>No chunks available</h3>
+            <p>Try reprocessing the document.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

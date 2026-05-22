@@ -26,7 +26,8 @@ urlpatterns = [
 
     # Main application API endpoints.
     path("api/", include("documents.urls")),
-]
+    # User interface endpoints.
+    path("", include("documents.ui_urls")),]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

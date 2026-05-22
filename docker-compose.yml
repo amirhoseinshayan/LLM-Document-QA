@@ -4,7 +4,7 @@ services:
     container_name: llm_document_qa_web
     command: /app/entrypoint.sh
     ports:
-      - "8000:8000"
+      - "9000:8000"
     volumes:
       - .:/app
       - media_data:/app/media

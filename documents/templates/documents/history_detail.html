@@ -1,0 +1,46 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>History Detail</h1>
+        <p>Review the saved question, answer, and related documents.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-light" href="{% url 'ui-history' %}">Back to History</a>
+        <a class="btn btn-danger" href="{% url 'ui-history-delete' history_item.pk %}">Delete</a>
+    </div>
+</div>
+
+<div class="card">
+    <p class="list-meta">Created at: {{ history_item.created_at }}</p>
+</div>
+
+<div class="card">
+    <h2>Question</h2>
+    <pre>{{ history_item.question }}</pre>
+</div>
+
+<div class="card">
+    <h2>Answer</h2>
+    <pre>{{ history_item.answer }}</pre>
+</div>
+
+<div class="card">
+    <h2>Related Documents</h2>
+
+    {% for document in history_item.related_documents.all %}
+        <p>
+            <a class="btn btn-light" href="{% url 'ui-document-detail' document.pk %}">
+                {{ document.title }}
+            </a>
+        </p>
+    {% empty %}
+        <div class="empty-state">
+            <h3>No related documents</h3>
+            <p>This history item does not have saved related documents.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

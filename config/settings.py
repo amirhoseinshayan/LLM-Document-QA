@@ -63,7 +63,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,6 +152,7 @@ OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/auto")
 SPECTACULAR_SETTINGS = {
     "TITLE": "LLM Document QA API",
     "DESCRIPTION": (
+        "[Back to Home](/)\n\n"
         "A Django REST API for uploading DOCX documents, extracting text, "
         "creating document chunks, searching relevant chunks, and generating "
         "question-answer results using a configurable RAG pipeline."

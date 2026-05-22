@@ -31,6 +31,15 @@ A Django-based document question-answering system.
 - Static files collection in Docker
 - Docker environment configuration
 - Persistent Docker volumes for media and SQLite database
+- Django Template-based user interface
+- Professional dashboard page
+- Document filtering in the UI
+- Document edit and delete support from the UI
+- Manual document reprocessing from the UI
+- Search interface with optional document filter
+- Ask interface with optional document filter
+- Question-answer history management from the UI
+- Delete and clear history actions
 
 ---
 
@@ -147,3 +156,27 @@ entrypoint.sh
 .env.docker
 ---
 ```
+---
+
+## User Interface
+
+The project includes a Django Template-based user interface.
+
+The UI allows users to use the main project features without manually typing API URLs or using Django Admin directly.
+
+### UI Pages
+
+```text
+GET /
+GET /documents/
+GET /documents/upload/
+GET /documents/{id}/
+GET /documents/{id}/edit/
+GET /documents/{id}/delete/
+POST /documents/{id}/reprocess/
+GET /search/
+GET /ask/
+GET /history/
+GET /history/{id}/
+GET /history/{id}/delete/
+GET /history/clear/

@@ -1,0 +1,47 @@
+{% extends "documents/base.html" %}
+
+{% block content %}
+<div class="topbar">
+    <div class="page-title">
+        <h1>Question/Answer History</h1>
+        <p>Review saved questions, generated answers, and related documents.</p>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn" href="{% url 'ui-ask' %}">Ask New Question</a>
+
+        {% if history_items %}
+            <a class="btn btn-danger" href="{% url 'ui-history-clear' %}">Clear All</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    {% for item in history_items %}
+        <div class="list-row">
+            <div>
+                <h3 class="list-title">
+                    <a href="{% url 'ui-history-detail' item.pk %}">
+                        {{ item.question|truncatechars:120 }}
+                    </a>
+                </h3>
+                <p class="list-meta">Created at: {{ item.created_at }}</p>
+                <p class="muted">{{ item.answer|truncatechars:240 }}</p>
+            </div>
+
+            <div>
+                <div class="actions">
+                    <a class="btn" href="{% url 'ui-history-detail' item.pk %}">Details</a>
+                    <a class="btn btn-danger" href="{% url 'ui-history-delete' item.pk %}">Delete</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <h3>No history yet</h3>
+            <p>Ask a question to create the first history record.</p>
+            <a class="btn" href="{% url 'ui-ask' %}">Ask Question</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
