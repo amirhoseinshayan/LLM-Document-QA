@@ -22,8 +22,8 @@ def home_view(request):
     documents_count = Document.objects.count()
     processed_documents_count = Document.objects.filter(is_processed=True).count()
     history_count = QuestionAnswer.objects.count()
-    latest_documents = Document.objects.all()[:5]
-    latest_history_items = QuestionAnswer.objects.all()[:5]
+    latest_documents = Document.objects.all()[:15]
+    latest_history_items = QuestionAnswer.objects.all()[:15]
 
     context = {
         "documents_count": documents_count,

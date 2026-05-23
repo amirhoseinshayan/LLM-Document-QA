@@ -12,12 +12,14 @@ def build_messages(question: str, context: str):
     Build standard chat messages for the configured LLM provider.
     """
     system_prompt = (
-        "You are a helpful document question-answering assistant. "
-        "Answer the user's question only based on the provided document context. "
+        "You are a careful document question-answering assistant. "
+        "You must answer only using the provided document context. "
         "Answer in the same language as the user's question. "
-        "If the answer is not available in the context, say: "
-        "'The provided documents do not contain enough information to answer this question.' "
-        "Do not invent information."
+        "If the user asks for something that is not clearly supported by the context, "
+        "say that the provided documents do not contain enough information to answer. "
+        "Do not recommend products, books, resources, or external information unless they are explicitly mentioned in the context. "
+        "Do not invent facts. "
+        "Keep the answer clear, concise, and grounded in the retrieved context."
     )
 
     user_prompt = (

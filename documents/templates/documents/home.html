@@ -42,57 +42,61 @@
         <h2>Latest Documents</h2>
         <p class="muted">Recently uploaded documents and processing status.</p>
 
-        {% for document in latest_documents %}
-            <div class="list-row">
-                <div>
-                    <h3 class="list-title">
-                        <a href="{% url 'ui-document-detail' document.pk %}">
-                            {{ document.title }}
-                        </a>
-                    </h3>
-                    <p class="list-meta">Uploaded at: {{ document.uploaded_at }}</p>
-                    <p class="list-meta">Chunks: {{ document.chunks.count }}</p>
-                </div>
+        <div class="scroll-panel">
+            {% for document in latest_documents %}
+                <div class="list-row">
+                    <div>
+                        <h3 class="list-title">
+                            <a href="{% url 'ui-document-detail' document.pk %}">
+                                {{ document.title }}
+                            </a>
+                        </h3>
+                        <p class="list-meta">Uploaded at: {{ document.uploaded_at }}</p>
+                        <p class="list-meta">Chunks: {{ document.chunks.count }}</p>
+                    </div>
 
-                <div>
-                    {% if document.is_processed %}
-                        <span class="badge badge-success">Processed</span>
-                    {% else %}
-                        <span class="badge badge-error">Not Processed</span>
-                    {% endif %}
+                    <div>
+                        {% if document.is_processed %}
+                            <span class="badge badge-success">Processed</span>
+                        {% else %}
+                            <span class="badge badge-error">Not Processed</span>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        {% empty %}
-            <div class="empty-state">
-                <h3>No documents yet</h3>
-                <p>Upload your first DOCX document to start.</p>
-                <a class="btn" href="{% url 'ui-document-upload' %}">Upload Document</a>
-            </div>
-        {% endfor %}
+            {% empty %}
+                <div class="empty-state">
+                    <h3>No documents yet</h3>
+                    <p>Upload your first DOCX document to start.</p>
+                    <a class="btn" href="{% url 'ui-document-upload' %}">Upload Document</a>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 
     <div class="card">
         <h2>Latest Questions</h2>
         <p class="muted">Recent questions submitted to the RAG pipeline.</p>
 
-        {% for item in latest_history_items %}
-            <div class="list-row">
-                <div>
-                    <h3 class="list-title">
-                        <a href="{% url 'ui-history-detail' item.pk %}">
-                            {{ item.question|truncatechars:80 }}
-                        </a>
-                    </h3>
-                    <p class="list-meta">Created at: {{ item.created_at }}</p>
+        <div class="scroll-panel">
+            {% for item in latest_history_items %}
+                <div class="list-row">
+                    <div>
+                        <h3 class="list-title">
+                            <a href="{% url 'ui-history-detail' item.pk %}">
+                                {{ item.question|truncatechars:80 }}
+                            </a>
+                        </h3>
+                        <p class="list-meta">Created at: {{ item.created_at }}</p>
+                    </div>
                 </div>
-            </div>
-        {% empty %}
-            <div class="empty-state">
-                <h3>No questions yet</h3>
-                <p>Ask your first question after uploading a document.</p>
-                <a class="btn" href="{% url 'ui-ask' %}">Ask Question</a>
-            </div>
-        {% endfor %}
+            {% empty %}
+                <div class="empty-state">
+                    <h3>No questions yet</h3>
+                    <p>Ask your first question after uploading a document.</p>
+                    <a class="btn" href="{% url 'ui-ask' %}">Ask Question</a>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}

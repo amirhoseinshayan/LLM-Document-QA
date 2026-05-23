@@ -16,7 +16,7 @@
     <div class="card">
         <h2>Question Form</h2>
 
-        <form method="post">
+        <form method="post" id="ask-form">
             {% csrf_token %}
 
             <label>Question</label>
@@ -29,7 +29,16 @@
             {{ form.document }}
 
             <div class="actions">
-                <button class="btn" type="submit">Generate Answer</button>
+                <button class="btn" type="submit" id="ask-submit-btn">
+                    Generate Answer
+                </button>
+            </div>
+
+            <div class="thinking-box" id="thinking-box">
+                <div class="thinking-spinner"></div>
+                <div>
+                    Thinking... The LLM is preparing your answer. Please wait.
+                </div>
             </div>
         </form>
     </div>
@@ -88,4 +97,20 @@
         {% endfor %}
     </div>
 {% endif %}
+
+<script>
+    const askForm = document.getElementById("ask-form");
+    const thinkingBox = document.getElementById("thinking-box");
+    const askSubmitButton = document.getElementById("ask-submit-btn");
+
+    if (askForm) {
+        askForm.addEventListener("submit", function () {
+            // Show a loading state while the LLM is generating the answer.
+            thinkingBox.style.display = "flex";
+            askSubmitButton.classList.add("btn-loading");
+            askSubmitButton.disabled = true;
+            askSubmitButton.innerText = "Thinking...";
+        });
+    }
+</script>
 {% endblock %}

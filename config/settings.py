@@ -15,8 +15,11 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
-
+# Load the correct environment file based on the runtime environment.
+if os.getenv("DJANGO_ENV") == "docker":
+    load_dotenv(BASE_DIR / ".env.docker", override=True)
+else:
+    load_dotenv(BASE_DIR / ".env", override=True)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -143,7 +146,7 @@ OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/auto")
 
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "mock").lower()
 
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
