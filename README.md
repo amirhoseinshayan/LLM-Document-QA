@@ -40,6 +40,12 @@ A Django-based document question-answering system.
 - Ask interface with optional document filter
 - Question-answer history management from the UI
 - Delete and clear history actions
+- Automated test suite
+- Document processing tests
+- API endpoint tests
+- Search and Ask API tests
+- User interface page tests
+- Swagger and ReDoc endpoint tests
 
 ---
 
@@ -180,3 +186,32 @@ GET /history/
 GET /history/{id}/
 GET /history/{id}/delete/
 GET /history/clear/
+
+---
+
+## Automated Tests
+
+The project includes automated tests to verify the main features and improve project reliability.
+
+### Test Coverage
+
+The tests cover:
+
+- DOCX document processing
+- Text extraction and chunk creation
+- Search service
+- Document API endpoints
+- Chunks API endpoints
+- Search API
+- Ask API with mock LLM provider
+- Question-answer history API
+- Django Template user interface pages
+- Swagger, ReDoc, and OpenAPI schema endpoints
+
+### Run Tests Locally
+
+```bash
+python manage.py test
+```
+
+---

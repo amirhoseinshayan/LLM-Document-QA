@@ -1,5 +1,5 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-
 from documents.models import Document, DocumentChunk, QuestionAnswer
 
 
@@ -48,7 +48,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "updated_at",
         ]
-
+    @extend_schema_field(int)
     def get_chunk_count(self, obj):
         return obj.chunks.count()
 
@@ -81,7 +81,7 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "updated_at",
         ]
-
+    @extend_schema_field(int)
     def get_chunk_count(self, obj):
         return obj.chunks.count()
 
@@ -104,7 +104,7 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
             "related_documents_titles",
             "created_at",
         ]
-
+    @extend_schema_field(list[str])
     def get_related_documents_titles(self, obj):
         return [document.title for document in obj.related_documents.all()]
     
