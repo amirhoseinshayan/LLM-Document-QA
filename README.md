@@ -215,3 +215,15 @@ python manage.py test
 ```
 
 ---
+---
+
+## Multi-format Document Upload
+
+The project now supports multiple file formats for document upload, text extraction, search, and question answering.
+
+### Supported File Types
+
+```text
+.docx
+.pdf
+.txt

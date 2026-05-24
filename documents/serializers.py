@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from documents.models import Document, DocumentChunk, QuestionAnswer
-
+from documents.services.file_extractor import SUPPORTED_FILE_EXTENSIONS
 
 class DocumentChunkSerializer(serializers.ModelSerializer):
     document_title = serializers.CharField(source="document.title", read_only=True)
@@ -51,6 +51,24 @@ class DocumentSerializer(serializers.ModelSerializer):
     @extend_schema_field(int)
     def get_chunk_count(self, obj):
         return obj.chunks.count()
+    
+    def validate_file(self, uploaded_file):
+        """
+        Validate uploaded file extension in the API.
+        """
+        file_name = uploaded_file.name.lower()
+        is_supported = any(
+            file_name.endswith(extension)
+            for extension in SUPPORTED_FILE_EXTENSIONS
+        )
+
+        if not is_supported:
+            supported = ", ".join(sorted(SUPPORTED_FILE_EXTENSIONS))
+            raise serializers.ValidationError(
+                f"Unsupported file type. Supported file types are: {supported}."
+            )
+
+        return uploaded_file
 
 
 class DocumentDetailSerializer(serializers.ModelSerializer):

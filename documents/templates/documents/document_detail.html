@@ -30,7 +30,9 @@
             {% if document.file %}
                 <p>
                     <strong>Uploaded file:</strong>
-                    <a href="{{ document.file.url }}" target="_blank">Open DOCX file</a>
+                    <a href="{{ document.file.url }}" target="_blank">
+                        Open {{ document.file_type_label }} file
+                    </a>
                 </p>
             {% endif %}
         </div>

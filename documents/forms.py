@@ -1,11 +1,32 @@
 from django import forms
 
 from documents.models import Document
+from documents.services.file_extractor import SUPPORTED_FILE_EXTENSIONS
+
+
+def validate_uploaded_file_extension(uploaded_file):
+    """
+    Validate uploaded file extension in UI forms.
+    """
+    if not uploaded_file:
+        return
+
+    file_name = uploaded_file.name.lower()
+    is_supported = any(
+        file_name.endswith(extension)
+        for extension in SUPPORTED_FILE_EXTENSIONS
+    )
+
+    if not is_supported:
+        supported = ", ".join(sorted(SUPPORTED_FILE_EXTENSIONS))
+        raise forms.ValidationError(
+            f"Unsupported file type. Supported file types are: {supported}."
+        )
 
 
 class DocumentUploadForm(forms.ModelForm):
     """
-    Form for uploading DOCX documents from the user interface.
+    Form for uploading supported document files from the user interface.
     """
 
     class Meta:
@@ -21,15 +42,20 @@ class DocumentUploadForm(forms.ModelForm):
             "file": forms.FileInput(
                 attrs={
                     "class": "form-control",
-                    "accept": ".docx",
+                    "accept": ".docx,.pdf,.txt",
                 }
             ),
         }
 
+    def clean_file(self):
+        uploaded_file = self.cleaned_data.get("file")
+        validate_uploaded_file_extension(uploaded_file)
+        return uploaded_file
+
 
 class DocumentUpdateForm(forms.ModelForm):
     """
-    Form for updating document title or replacing the DOCX file.
+    Form for updating document title or replacing the uploaded file.
     """
 
     class Meta:
@@ -45,7 +71,7 @@ class DocumentUpdateForm(forms.ModelForm):
             "file": forms.FileInput(
                 attrs={
                     "class": "form-control",
-                    "accept": ".docx",
+                    "accept": ".docx,.pdf,.txt",
                 }
             ),
         }
@@ -55,6 +81,11 @@ class DocumentUpdateForm(forms.ModelForm):
 
         # Keep the current file if the user does not upload a new one.
         self.fields["file"].required = False
+
+    def clean_file(self):
+        uploaded_file = self.cleaned_data.get("file")
+        validate_uploaded_file_extension(uploaded_file)
+        return uploaded_file
 
 
 class DocumentFilterForm(forms.Form):

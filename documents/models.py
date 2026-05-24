@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.validators import FileExtensionValidator
+from pathlib import Path
 
 
 def validate_docx_file(file):
@@ -8,19 +10,53 @@ def validate_docx_file(file):
 
 
 class Document(models.Model):
+    """
+    Uploaded document model.
+    """
+
     title = models.CharField(max_length=255)
+
     file = models.FileField(
         upload_to="documents/",
-        validators=[validate_docx_file],
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=["docx", "pdf", "txt"],
+                message="Only DOCX, PDF, and TXT files are supported.",
+            )
+        ],
     )
     full_text = models.TextField(blank=True)
     is_processed = models.BooleanField(default=False)
-    processing_error = models.TextField(blank=True, null=True)
+    processing_error = models.TextField(blank=True)
+
     uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
     class Meta:
         ordering = ["-uploaded_at"]
+
+    @property
+    def file_extension(self):
+        """
+        Return the uploaded file extension without the dot.
+        """
+        if not self.file:
+            return ""
+
+        return Path(self.file.name).suffix.lower().replace(".", "")
+
+    @property
+    def file_type_label(self):
+        """
+        Return a readable file type label for the UI.
+        """
+        extension = self.file_extension
+
+        if not extension:
+            return "Document"
+
+        return extension.upper()
 
     def __str__(self):
         return self.title

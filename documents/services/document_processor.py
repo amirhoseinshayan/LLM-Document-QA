@@ -1,53 +1,43 @@
+from django.db import transaction
+
 from documents.models import DocumentChunk
-from documents.services.chunker import chunk_text
-from documents.services.docx_extractor import extract_text_from_docx
+from documents.services.file_extractor import extract_text_from_file
+from documents.services.text_splitter import split_text
 
 
 def process_document(document):
     """
-    Extract text from a document file and create text chunks.
+    Extract text from a document, create chunks, and update processing status.
     """
     try:
-        full_text = extract_text_from_docx(document.file.path)
+        if not document.file:
+            raise ValueError("No file was uploaded for this document.")
 
-        document.full_text = full_text
-        document.is_processed = True
-        document.processing_error = ""
+        full_text = extract_text_from_file(document.file.path)
+        chunks = split_text(full_text)
 
-        document.save(
-            update_fields=[
-                "full_text",
-                "is_processed",
-                "processing_error",
-                "updated_at",
-            ]
-        )
+        with transaction.atomic():
+            # Remove old chunks before creating new ones.
+            DocumentChunk.objects.filter(document=document).delete()
 
-        document.chunks.all().delete()
+            document.full_text = full_text
+            document.is_processed = True
+            document.processing_error = ""
+            document.save()
 
-        chunks = chunk_text(full_text)
-
-        chunk_objects = [
-            DocumentChunk(
-                document=document,
-                content=chunk,
-                chunk_index=index,
-            )
-            for index, chunk in enumerate(chunks)
-        ]
-
-        DocumentChunk.objects.bulk_create(chunk_objects)
+            for index, chunk in enumerate(chunks):
+                DocumentChunk.objects.create(
+                    document=document,
+                    content=chunk,
+                    chunk_index=index,
+                )
 
         return True
 
     except Exception as exc:
+        document.full_text = ""
         document.is_processed = False
         document.processing_error = str(exc)
-        document.save(
-            update_fields=[
-                "is_processed",
-                "processing_error",
-                "updated_at",
-            ]
-        )
+        document.save()
+
         return False

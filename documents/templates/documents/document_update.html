@@ -4,7 +4,7 @@
 <div class="topbar">
     <div class="page-title">
         <h1>Edit Document</h1>
-        <p>Update the title or replace the DOCX file.</p>
+        <p>Update the title or replace the uploaded file.</p>
     </div>
 
     <div class="top-actions">
@@ -19,11 +19,11 @@
         <label>Title</label>
         {{ form.title }}
 
-        <label>Replace DOCX File</label>
+        <label>Replace Document File</label>
         {{ form.file }}
 
         <p class="muted">
-            If you upload a new file, the document will be reprocessed automatically.
+            Supported formats: DOCX, PDF, TXT. If you upload a new file, the document will be reprocessed automatically.
         </p>
 
         <div class="actions">
