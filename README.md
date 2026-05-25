@@ -1,51 +1,71 @@
 # LLM Document QA System
 
-A Django-based document question-answering system.
+A Django-based document question-answering system that allows users to upload documents, extract text, search document chunks, and ask questions using a RAG-based workflow with Ollama LLM support.
+
+---
+
+## Project Overview
+
+This project is a document question-answering system built with Django and Django REST Framework.
+
+The system can:
+
+- Upload and process documents
+- Extract text from supported files
+- Split extracted text into searchable chunks
+- Search relevant chunks based on a query
+- Generate answers using retrieved document context
+- Store question-answer history
+- Provide both REST API and web interface
+- Run locally or with Docker
+- Connect to a local Ollama LLM provider
+
+---
+
+## Current Project Status
+
+The project currently includes the implementation of the first twelve phases:
+
+- Initial Django project setup
+- Initial document upload, text extraction, and chunk creation
+- REST API endpoints for documents, chunks, and question-answer history
+- Text splitting and document chunk search API
+- RAG-based Ask API with configurable LLM provider support
+- Swagger/OpenAPI API documentation
+- Docker and Docker Compose setup
+- Django Template-based user interface
+- Automated tests and quality assurance
+- Multi-format document upload support
+- LLM reliability, fallback handling, provider status, and answer metadata
+- Final documentation and demo preparation
 
 ---
 
 ## Current Features
 
 - Django project setup
-- `documents` app setup
-- Document management through Django Admin
-- DOCX file upload support
-- Full text extraction from DOCX files
-- Full text storage in the database
-- LangChain-based text chunking
-- Chunk storage in the database
+- Django REST Framework API
+- Django Template-based user interface
+- Document upload and management
+- Multi-format document upload support
+- Supported file types: DOCX, PDF, TXT
+- Text extraction from uploaded documents
+- Text chunking and chunk storage
 - Document CRUD API
 - Read-only chunks API
-- Read-only question-answer history API
-- Manual document reprocessing API
-- Search API for finding relevant document chunks
-- Question/Answer history models prepared for the next phases
-- SQLite for local development
-- OpenAPI schema generation
+- Question-answer history API
+- Manual document reprocessing
+- Search API for finding relevant chunks
+- Ask API with RAG workflow
+- Ollama LLM integration
+- Mock fallback answer support
+- LLM provider status display
+- Answer metadata showing provider and model
 - Swagger UI documentation
 - ReDoc documentation
-- Interactive API testing through Swagger UI
-- Docker support
-- Docker Compose setup
-- Automatic migrations on container startup
-- Static files collection in Docker
-- Docker environment configuration
+- Docker and Docker Compose support
 - Persistent Docker volumes for media and SQLite database
-- Django Template-based user interface
-- Professional dashboard page
-- Document filtering in the UI
-- Document edit and delete support from the UI
-- Manual document reprocessing from the UI
-- Search interface with optional document filter
-- Ask interface with optional document filter
-- Question-answer history management from the UI
-- Delete and clear history actions
-- Automated test suite
-- Document processing tests
-- API endpoint tests
-- Search and Ask API tests
-- User interface page tests
-- Swagger and ReDoc endpoint tests
+- Automated tests for processing, API, UI, and documentation pages
 
 ---
 
@@ -54,123 +74,510 @@ A Django-based document question-answering system.
 - Python
 - Django
 - Django REST Framework
+- SQLite
 - python-docx
-- LangChain
-- langchain-text-splitters
-- SQLite for local development
-
-## How to Run the Project
-
-The project can be run in two ways:
-
-1. Local development using a Python virtual environment
-2. Docker development using Docker Compose
+- pypdf
+- httpx
+- drf-spectacular
+- Docker
+- Docker Compose
+- Ollama
 
 ---
 
-## Option 1: Run Locally with Virtual Environment
+## Supported File Types
 
-### 1. Create and activate a virtual environment
+The project supports these document formats:
+
+```text
+.docx
+.pdf
+.txt
+```
+
+### Notes
+
+- DOCX files are processed with `python-docx`.
+- PDF files are processed with `pypdf`.
+- TXT files are read as plain text.
+- PDF files must contain selectable text.
+- Scanned image-based PDFs may not extract text correctly without OCR.
+- Unsupported file types are rejected during upload.
+
+---
+
+## RAG Workflow
+
+The Ask feature follows this flow:
+
+```text
+User Question
+→ Search Relevant Chunks
+→ Build Context
+→ Send Context + Question to LLM
+→ Generate Answer
+→ Save Question/Answer History
+```
+
+The system is designed to answer based on uploaded document context.
+
+---
+
+## Environment Files
+
+The project uses environment variables for local and Docker development.
+
+Real environment files are ignored by Git:
+
+```text
+.env
+.env.docker
+```
+
+Example files should be committed:
+
+```text
+.env.example
+.env.docker.example
+```
+
+---
+
+## Local Environment Example
+
+Create a `.env` file in the project root based on `.env.example`:
+
+```env
+DEBUG=True
+SECRET_KEY=replace-this-with-your-local-secret-key
+
+LLM_PROVIDER=ollama
+
+OLLAMA_MODEL=llama3.2:1b
+OLLAMA_BASE_URL=http://localhost:11434
+
+LLM_TIMEOUT_SECONDS=120
+LLM_MAX_CONTEXT_CHARS=8000
+LLM_FALLBACK_TO_MOCK=True
+
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=openrouter/auto
+```
+
+For local development, Ollama should be available at:
+
+```text
+http://localhost:11434
+```
+
+---
+
+## Docker Environment Example
+
+Create a `.env.docker` file in the project root based on `.env.docker.example`:
+
+```env
+DEBUG=True
+SECRET_KEY=django-insecure-docker-development-key
+
+LLM_PROVIDER=ollama
+
+OLLAMA_MODEL=llama3.2:1b
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+LLM_TIMEOUT_SECONDS=120
+LLM_MAX_CONTEXT_CHARS=8000
+LLM_FALLBACK_TO_MOCK=True
+
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=openrouter/auto
+```
+
+For Docker development, the Django container connects to Ollama through:
+
+```text
+http://host.docker.internal:11434
+```
+
+---
+
+## Ollama Setup
+
+This project uses Ollama as the local LLM provider.
+
+Make sure the Ollama container is running:
+
+```bash
+docker start ollama
+```
+
+Check installed models:
+
+```bash
+docker exec -it ollama ollama list
+```
+
+The project currently uses:
+
+```text
+llama3.2:1b
+```
+
+If the model is not installed, install it inside the Ollama container:
+
+```bash
+docker exec -it ollama ollama pull llama3.2:1b
+```
+
+Test Ollama API:
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+---
+
+## How to Run the Project Locally
+
+### 1. Create and activate virtual environment
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-open the project http://127.0.0.1:8000/admin/
 ```
-## Option 2: Run with Docker
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Apply migrations
+
+```bash
+python manage.py migrate
+```
+
+### 4. Create superuser
+
+```bash
+python manage.py createsuperuser
+```
+
+### 5. Start Ollama
+
+```bash
+docker start ollama
+```
+
+### 6. Run the Django server
+
+```bash
+python manage.py runserver 127.0.0.1:9000
+```
+
+### 7. Open the project
+
+```text
+http://127.0.0.1:9000/
+```
+
+Useful local URLs:
+
+```text
+Home:        http://127.0.0.1:9000/
+Admin:       http://127.0.0.1:9000/admin/
+API Root:    http://127.0.0.1:9000/api/
+Swagger:     http://127.0.0.1:9000/api/docs/
+ReDoc:       http://127.0.0.1:9000/api/redoc/
+```
+
+---
+
+## How to Run the Project with Docker
 
 ### 1. Make sure Docker Desktop is running
 
+Docker Desktop must be open and running.
+
+### 2. Make sure Ollama is running
+
+```bash
+docker start ollama
+```
+
+### 3. Build and run the Django container
+
+If dependencies or Docker files changed:
+
 ```bash
 docker compose up --build
-open http://127.0.0.1:8000/
-Create a superuser inside Docker
-open new terminal and write: docker compose exec web python manage.py createsuperuser
 ```
 
-## API Documentation
+If only Python, HTML, CSS, or template files changed:
 
-This section describes the current REST API endpoints implemented in the project.
+```bash
+docker compose up
+```
 
-Base API URL:
+### 4. Open the project
+
+If `docker-compose.yml` maps the project like this:
+
+```yaml
+ports:
+  - "9000:8000"
+```
+
+Open:
 
 ```text
-http://127.0.0.1:8000/api/
+http://127.0.0.1:9000/
+```
 
-API Root -------> GET /api/
-Documents API ------> GET /api/documents/
-    Create Documents -------> POST /api/documents/
-    Retrieve Document -------> GET /api/documents/{id}/
-    Update Document -------> PUT /api/documents/{id}/
-    Partial Update Document ------> PATCH /api/documents/{id}/
-    Delete Document ------> DELETE /api/documents/{id}/
-    Reprocess Document ------> POST /api/documents/{id}/reprocess/
-Chunks API -----> GET /api/chunks/
-    Retrieve Chunk ------> GET /api/chunks/{id}/
-    Filter Chunks by Document ------> GET /api/chunks/?document={document_id}
-List Question/Answer History -----> GET /api/history/
-    Retrieve Question/Answer History ------> GET /api/history/{id}/
+### 5. Create superuser inside Docker
 
-API Testing Guide:
-    -run python manage.py runserver
-    -then open http://127.0.0.1:8000/api/
+Open a new terminal and run:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+### 6. Run tests inside Docker
+
+```bash
+docker compose exec web python manage.py test
+```
+
+---
+## Run with OpenRouter Online LLM
+
+Use this option if you want to run the project without a local Ollama model.
+
+In this mode:
+
+- Ollama is not required.
+- The answer generation is handled by OpenRouter.
+- You must provide a valid OpenRouter API key.
+- Internet access is required.
+
+### 1. Get an OpenRouter API key
+
+Create an API key from your OpenRouter account.
+
+Then place the key in your environment file.
+
+### 2. Configure `.env` for local development
+
+For local development, update `.env` like this:
+
+```env
+DEBUG=True
+SECRET_KEY=replace-this-with-your-local-secret-key
+
+LLM_PROVIDER=openrouter
+
+OLLAMA_MODEL=llama3.2:1b
+OLLAMA_BASE_URL=http://localhost:11434
+
+LLM_TIMEOUT_SECONDS=120
+LLM_MAX_CONTEXT_CHARS=8000
+LLM_FALLBACK_TO_MOCK=True
+
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+OPENROUTER_MODEL=openrouter/auto
+```
+
+### 3. Configure `.env.docker` for Docker development
+
+For Docker development, update `.env.docker` like this:
+
+```env
+DEBUG=True
+SECRET_KEY=django-insecure-docker-development-key
+
+LLM_PROVIDER=openrouter
+
+OLLAMA_MODEL=llama3.2:1b
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+LLM_TIMEOUT_SECONDS=120
+LLM_MAX_CONTEXT_CHARS=8000
+LLM_FALLBACK_TO_MOCK=True
+
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+OPENROUTER_MODEL=openrouter/auto
+```
+
+### 4. Run locally with OpenRouter
+
+```bash
+python manage.py migrate
+python manage.py runserver 127.0.0.1:9000
+```
+
+Open:
+
+```text
+http://127.0.0.1:9000/
+```
+
+Then go to:
+
+```text
+http://127.0.0.1:9000/ask/
+```
+
+Ask a question after uploading a document.
+
+If OpenRouter is configured correctly, the answer metadata should show something like:
+
+```text
+Answered by: openrouter / openrouter/auto
+```
+
+### 5. Run with Docker and OpenRouter
+
+After updating `.env.docker`, run:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+Open:
+
+```text
+http://127.0.0.1:9000/
+```
+
+Then test:
+
+```text
+http://127.0.0.1:9000/ask/
+```
+
+### 6. OpenRouter fallback behavior
+
+If OpenRouter is selected but the API key is missing, invalid, expired, or the internet connection is unavailable, the project will use the fallback behavior when this setting is enabled:
+
+```env
+LLM_FALLBACK_TO_MOCK=True
+```
+
+In that case, the answer metadata may show:
+
+```text
+Answered by: mock / mock-fallback
+```
+
+This means the system retrieved document context, but the online LLM provider was not available.
+
+---
+
+## Choosing Between Ollama and OpenRouter
+
+Use Ollama when:
+
+- You want local LLM execution.
+- You already have Ollama installed.
+- You have the required model installed.
+- You want the project to work without relying on an online API.
+
+Use OpenRouter when:
+
+- You do not have Ollama installed.
+- Your laptop cannot run local LLM models efficiently.
+- You want to use stronger online models.
+- You have an OpenRouter API key and internet access.
+
+To switch providers, only change this value:
+
+```env
+LLM_PROVIDER=ollama
+```
+
+or:
+
+```env
+LLM_PROVIDER=openrouter
+```
+
+Then restart the server or Docker container.
+
+---
+
+## LLM Provider Check
+
+The dashboard shows the currently configured LLM provider and its availability.
+
+Possible provider labels:
+
+```text
+ollama-langchain
+openrouter
+mock
+```
+
+The Ask page also shows which provider generated the answer:
+
+```text
+Answered by: ollama-langchain / llama3.2:1b
+Answered by: openrouter / openrouter/auto
+Answered by: mock / mock-fallback
 ```
 
 ---
 
-## 4. Ask API
+## Important Docker Notes
 
-The Ask API is used to submit a user question and generate an answer based on the uploaded document chunks.
-
-This endpoint implements the main RAG flow of the project:
+The project has two separate containers:
 
 ```text
-User Question → Search Relevant Chunks → Build Context → Generate Answer → Save History
+ollama
+llm_document_qa_web
 ```
----
 
-## Swagger and OpenAPI Documentation
+### Ollama container
 
-The project includes automatically generated API documentation using `drf-spectacular`.
+The Ollama container runs the language model.
 
-Available documentation endpoints:
+It exposes:
 
 ```text
-GET /api/schema/ -----> http://127.0.0.1:8000/api/schema/
-GET /api/docs/ -----> http://127.0.0.1:8000/api/docs/
-GET /api/redoc/ -----> http://127.0.0.1:8000/api/redoc/
+11434:11434
 ```
----
 
-## Docker Setup
+### Django container
 
-The project can be run with Docker and Docker Compose.
+The Django container runs the project.
 
-### Docker Files
+It handles:
 
-The project includes:
+- UI
+- API
+- Uploads
+- Text extraction
+- Chunking
+- Search
+- RAG flow
+- History storage
+
+The Django container connects to Ollama using:
 
 ```text
-Dockerfile
-docker-compose.yml
-.dockerignore
-entrypoint.sh
-.env.docker
----
+http://host.docker.internal:11434
 ```
+
+If Ollama is turned off, upload and search still work, but Ask will use fallback behavior if fallback is enabled.
+
 ---
 
 ## User Interface
 
 The project includes a Django Template-based user interface.
 
-The UI allows users to use the main project features without manually typing API URLs or using Django Admin directly.
-
-### UI Pages
+### Main UI Pages
 
 ```text
 GET /
@@ -186,67 +593,222 @@ GET /history/
 GET /history/{id}/
 GET /history/{id}/delete/
 GET /history/clear/
+```
+
+### UI Features
+
+- Dashboard with project statistics
+- LLM provider status display
+- Document upload page
+- Document list and filtering
+- Document detail page
+- Extracted text display
+- Generated chunks display
+- Document edit and delete
+- Manual document reprocessing
+- Search interface
+- Ask interface
+- Thinking/loading state while LLM is generating an answer
+- Answer metadata showing provider/model
+- Question-answer history
+- Delete history item
+- Clear all history
+- Links to API Docs and Admin
+
+---
+
+## Answer Metadata
+
+After asking a question, the UI shows which provider and model generated the answer.
+
+Example with Ollama:
+
+```text
+Answered by: ollama / llama3.2:1b
+```
+
+Example with fallback:
+
+```text
+Answered by: mock / mock-fallback
+```
+
+This helps users understand whether the answer came from the real LLM or from the fallback system.
+
+---
+
+## API Documentation
+
+The project includes automatically generated API documentation using `drf-spectacular`.
+
+Available documentation endpoints:
+
+```text
+GET /api/schema/
+GET /api/docs/
+GET /api/redoc/
+```
+
+Local URLs:
+
+```text
+http://127.0.0.1:9000/api/schema/
+http://127.0.0.1:9000/api/docs/
+http://127.0.0.1:9000/api/redoc/
+```
+
+---
+
+## REST API Endpoints
+
+Base API URL:
+
+```text
+http://127.0.0.1:9000/api/
+```
+
+### API Root
+
+```text
+GET /api/
+```
+
+### Documents API
+
+```text
+GET    /api/documents/
+POST   /api/documents/
+GET    /api/documents/{id}/
+PUT    /api/documents/{id}/
+PATCH  /api/documents/{id}/
+DELETE /api/documents/{id}/
+POST   /api/documents/{id}/reprocess/
+```
+
+### Chunks API
+
+```text
+GET /api/chunks/
+GET /api/chunks/{id}/
+GET /api/chunks/?document={document_id}
+```
+
+### Search API
+
+```text
+POST /api/search/
+```
+
+Example request:
+
+```json
+{
+  "query": "document question answering",
+  "top_k": 5
+}
+```
+
+### Ask API
+
+```text
+POST /api/ask/
+```
+
+Example request:
+
+```json
+{
+  "question": "What is this document about?",
+  "top_k": 5
+}
+```
+
+The Ask API performs the main RAG flow:
+
+```text
+Search Relevant Chunks
+→ Build Context
+→ Generate Answer
+→ Save History
+```
+
+### History API
+
+```text
+GET /api/history/
+GET /api/history/{id}/
+```
 
 ---
 
 ## Automated Tests
 
-The project includes automated tests to verify the main features and improve project reliability.
+The project includes automated tests to verify the main features.
 
 ### Test Coverage
 
-The tests cover:
+Tests cover:
 
-- DOCX document processing
-- Text extraction and chunk creation
-- Search service
+- Document processing
+- Text extraction
+- Chunk creation
 - Document API endpoints
 - Chunks API endpoints
 - Search API
-- Ask API with mock LLM provider
+- Ask API
 - Question-answer history API
-- Django Template user interface pages
-- Swagger, ReDoc, and OpenAPI schema endpoints
+- User interface pages
+- Swagger and ReDoc pages
 
-### Run Tests Locally
+### Run tests locally
 
 ```bash
 python manage.py test
 ```
 
----
----
+### Run tests in Docker
 
-## Multi-format Document Upload
-
-The project now supports multiple file formats for document upload, text extraction, search, and question answering.
-
-### Supported File Types
-
-```text
-.docx
-.pdf
-.txt
+```bash
+docker compose exec web python manage.py test
 ```
 
 ---
 
-## LLM Reliability and Answer Metadata
+## Git Ignore Notes
 
-The project includes improved LLM reliability and answer transparency.
-
-### Features
-
-- Ollama provider availability check
-- Safer document-grounded prompting
-- Fallback answer when the LLM provider is unavailable
-- LLM timeout and context-size configuration
-- Dashboard LLM status display
-- Answer metadata showing which provider/model generated the answer
-
-### Answer Metadata
-
-After asking a question, the UI shows the answer source, for example:
+The following files should not be committed:
 
 ```text
-Answered by: ollama / llama3.2:1b
+.env
+.env.docker
+db.sqlite3
+media/
+venv/
+__pycache__/
+staticfiles/
+*.gguf
+ollama_models/
+```
+
+The following example files should be committed:
+
+```text
+.env.example
+.env.docker.example
+```
+
+---
+
+## Development Notes
+
+- Use `.env` for local development.
+- Use `.env.docker` for Docker development.
+- Use `http://localhost:11434` for local Ollama access.
+- Use `http://host.docker.internal:11434` for Docker-to-host Ollama access.
+- If only code or templates changed, `docker compose up` is usually enough.
+- If `requirements.txt`, `Dockerfile`, `entrypoint.sh`, or `docker-compose.yml` changed, rebuild with `docker compose up --build`.
+- PDF extraction works best with text-based PDFs.
+- Scanned PDFs require OCR, which is not included yet.
+
+---
+

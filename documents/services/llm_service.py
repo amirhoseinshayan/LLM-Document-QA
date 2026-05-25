@@ -1,6 +1,9 @@
+from dataclasses import dataclass
+
 import httpx
 from django.conf import settings
-from dataclasses import dataclass
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
 
 
 class LLMServiceError(Exception):
@@ -13,6 +16,8 @@ class LLMConfigurationError(LLMServiceError):
     """
     Backward-compatible error used by older API views.
     """
+
+
 @dataclass
 class LLMGenerationResult:
     """
@@ -23,6 +28,7 @@ class LLMGenerationResult:
     provider: str
     model: str
     used_fallback: bool = False
+
 
 def build_system_prompt() -> str:
     """
@@ -53,6 +59,18 @@ def build_user_prompt(question: str, context: str) -> str:
         "User question:\n"
         f"{question}\n\n"
         "Answer:"
+    )
+
+
+def build_langchain_prompt():
+    """
+    Build a LangChain chat prompt template for the RAG answer generation flow.
+    """
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", "{system_prompt}"),
+            ("human", "{user_prompt}"),
+        ]
     )
 
 
@@ -148,49 +166,38 @@ def generate_mock_answer(question: str, context: str, error_message: str = "") -
 
 def generate_answer_with_ollama(question: str, context: str) -> str:
     """
-    Generate an answer using the local Ollama API.
+    Generate an answer using Ollama through LangChain.
     """
     base_url = find_available_ollama_base_url()
 
     if not base_url:
         raise LLMServiceError("Ollama is not reachable from the current environment.")
 
-    url = f"{base_url}/api/chat"
+    prompt = build_langchain_prompt()
 
-    payload = {
-        "model": settings.OLLAMA_MODEL,
-        "stream": False,
-        "messages": [
-            {
-                "role": "system",
-                "content": build_system_prompt(),
-            },
-            {
-                "role": "user",
-                "content": build_user_prompt(question, context),
-            },
-        ],
-        "options": {
-            "temperature": 0.2,
-        },
-    }
+    llm = ChatOllama(
+        model=settings.OLLAMA_MODEL,
+        base_url=base_url,
+        temperature=0.2,
+        timeout=settings.LLM_TIMEOUT_SECONDS,
+    )
+
+    chain = prompt | llm
 
     try:
-        response = httpx.post(
-            url,
-            json=payload,
-            timeout=settings.LLM_TIMEOUT_SECONDS,
+        response = chain.invoke(
+            {
+                "system_prompt": build_system_prompt(),
+                "user_prompt": build_user_prompt(question, context),
+            }
         )
-        response.raise_for_status()
-    except httpx.HTTPError as exc:
-        raise LLMServiceError(f"Ollama request failed: {exc}") from exc
+    except Exception as exc:
+        raise LLMServiceError(f"LangChain Ollama request failed: {exc}") from exc
 
-    data = response.json()
-    message = data.get("message", {})
-    answer = message.get("content", "").strip()
+    answer = getattr(response, "content", "").strip()
 
     if not answer:
-        raise LLMServiceError("Ollama returned an empty answer.")
+        raise LLMServiceError("LangChain Ollama returned an empty answer.")
 
     return answer
 
@@ -198,6 +205,8 @@ def generate_answer_with_ollama(question: str, context: str) -> str:
 def generate_answer_with_openrouter(question: str, context: str) -> str:
     """
     Generate an answer using OpenRouter if configured.
+
+    This provider is kept as an optional future provider.
     """
     if not settings.OPENROUTER_API_KEY:
         raise LLMServiceError("OpenRouter API key is not configured.")
@@ -261,7 +270,7 @@ def generate_answer(question: str, context: str) -> LLMGenerationResult:
 
             return LLMGenerationResult(
                 answer=answer,
-                provider="ollama",
+                provider="ollama-langchain",
                 model=settings.OLLAMA_MODEL,
                 used_fallback=False,
             )
@@ -331,24 +340,24 @@ def get_llm_status() -> dict:
 
                 if not model_available:
                     return {
-                        "provider": "ollama",
+                        "provider": "ollama-langchain",
                         "model": settings.OLLAMA_MODEL,
                         "is_available": False,
                         "message": f"Ollama is reachable at {base_url}, but the model is not installed.",
                     }
 
                 return {
-                    "provider": "ollama",
+                    "provider": "ollama-langchain",
                     "model": settings.OLLAMA_MODEL,
                     "is_available": True,
-                    "message": f"Ollama is available at {base_url}.",
+                    "message": f"Ollama is available at {base_url}. LangChain is used for prompt flow and model calls.",
                 }
 
             except httpx.HTTPError:
                 continue
 
         return {
-            "provider": "ollama",
+            "provider": "ollama-langchain",
             "model": settings.OLLAMA_MODEL,
             "is_available": False,
             "message": "Ollama is not available from the current environment.",
@@ -370,4 +379,3 @@ def get_llm_status() -> dict:
         "is_available": False,
         "message": "Unknown LLM provider.",
     }
-
