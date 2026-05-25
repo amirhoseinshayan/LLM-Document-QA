@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-
+from documents.services.llm_service import get_llm_status
 from documents.forms import (
     AskQuestionForm,
     DocumentFilterForm,
@@ -24,6 +24,7 @@ def home_view(request):
     history_count = QuestionAnswer.objects.count()
     latest_documents = Document.objects.all()[:15]
     latest_history_items = QuestionAnswer.objects.all()[:15]
+    llm_status = get_llm_status()
 
     context = {
         "documents_count": documents_count,
@@ -32,6 +33,7 @@ def home_view(request):
         "latest_documents": latest_documents,
         "latest_history_items": latest_history_items,
         "llm_provider": settings.LLM_PROVIDER,
+        "llm_status": llm_status,
     }
 
     return render(request, "documents/home.html", context)

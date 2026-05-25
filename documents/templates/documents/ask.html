@@ -59,7 +59,17 @@
 {% if rag_result %}
     <div class="card">
         <h2>Generated Answer</h2>
-
+        <div class="actions">
+            {% if rag_result.used_fallback %}
+                <span class="badge badge-error">
+                    Answered by: {{ rag_result.llm_provider }} / {{ rag_result.llm_model }}
+                </span>
+            {% else %}
+                <span class="badge badge-success">
+                    Answered by: {{ rag_result.llm_provider }} / {{ rag_result.llm_model }}
+                </span>
+            {% endif %}
+        </div>
         {% if selected_document %}
             <p>Document filter: <strong>{{ selected_document.title }}</strong></p>
         {% else %}

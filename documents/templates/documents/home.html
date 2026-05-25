@@ -32,8 +32,17 @@
     </div>
 
     <div class="card stat-card">
-        <p class="stat-number">{{ llm_provider }}</p>
+        <p class="stat-number">{{ llm_status.provider }}</p>
         <p class="stat-label">Current LLM Provider</p>
+
+        {% if llm_status.is_available %}
+            <span class="badge badge-success">Available</span>
+        {% else %}
+            <span class="badge badge-error">Unavailable</span>
+        {% endif %}
+
+        <p class="list-meta">Model: {{ llm_status.model }}</p>
+        <p class="list-meta">{{ llm_status.message }}</p>
     </div>
 </div>
 

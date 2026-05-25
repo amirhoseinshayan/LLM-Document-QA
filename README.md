@@ -227,3 +227,26 @@ The project now supports multiple file formats for document upload, text extract
 .docx
 .pdf
 .txt
+```
+
+---
+
+## LLM Reliability and Answer Metadata
+
+The project includes improved LLM reliability and answer transparency.
+
+### Features
+
+- Ollama provider availability check
+- Safer document-grounded prompting
+- Fallback answer when the LLM provider is unavailable
+- LLM timeout and context-size configuration
+- Dashboard LLM status display
+- Answer metadata showing which provider/model generated the answer
+
+### Answer Metadata
+
+After asking a question, the UI shows the answer source, for example:
+
+```text
+Answered by: ollama / llama3.2:1b

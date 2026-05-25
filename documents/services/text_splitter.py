@@ -1,32 +1,30 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-
-def split_text(text: str) -> list[str]:
+def split_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 150) -> list[str]:
     """
-    Split extracted document text into searchable chunks.
+    Split extracted text into overlapping chunks without external dependencies.
     """
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=150,
-        separators=[
-            "\n\n",
-            "\n",
-            ".",
-            "!",
-            "?",
-            "؟",
-            "؛",
-            "،",
-            " ",
-            "",
-        ],
-    )
+    if not text:
+        return []
 
-    chunks = splitter.split_text(text)
+    cleaned_text = text.strip()
 
-    # Remove empty chunks after splitting.
-    return [
-        chunk.strip()
-        for chunk in chunks
-        if chunk.strip()
-    ]
+    if len(cleaned_text) <= chunk_size:
+        return [cleaned_text]
+
+    chunks = []
+    start = 0
+    text_length = len(cleaned_text)
+
+    while start < text_length:
+        end = start + chunk_size
+        chunk = cleaned_text[start:end].strip()
+
+        if chunk:
+            chunks.append(chunk)
+
+        if end >= text_length:
+            break
+
+        # Keep overlap between chunks to preserve context.
+        start = end - chunk_overlap
+
+    return chunks
